@@ -84,9 +84,30 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
 
         if (marker == null) {
-            marker = mMap.addMarker(new MarkerOptions().position(directionPoint.get(currentPt)).icon(BitmapDescriptorFactory.fromBitmap(smallMarker)));
-            mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(directionPoint.get(currentPt), 14.0f));
+            marker = mMap.addMarker(new MarkerOptions().position(directionPoint.get(currentPt))
+                    .flat(true)
+                    .icon(BitmapDescriptorFactory.fromBitmap(smallMarker)));
+       //     mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(directionPoint.get(currentPt), 16.0f));
         }
+
+           //Adjusting bounds
+        LatLngBounds.Builder builder = new LatLngBounds.Builder();
+        for (LatLng latLng : directionPoint) {
+            builder.include(latLng);
+        }
+        final LatLngBounds bounds = builder.build();
+        final CameraUpdate mCameraUpdate = CameraUpdateFactory.newLatLngBounds(bounds, 10);
+
+
+        mMap.addMarker(new MarkerOptions().position(directionPoint.get(directionPoint.size() - 1)));
+
+
+        mMap.setOnMapLoadedCallback(new GoogleMap.OnMapLoadedCallback() {
+            @Override
+            public void onMapLoaded() {
+                mMap.moveCamera(mCameraUpdate);
+            }
+        });
 
         drawPolyLineAndAnimateCar();
 
@@ -135,22 +156,10 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private int index, next;
 
     private void drawPolyLineAndAnimateCar() {
-        //Adjusting bounds
-        LatLngBounds.Builder builder = new LatLngBounds.Builder();
-        for (LatLng latLng : directionPoint) {
-            builder.include(latLng);
-        }
-        LatLngBounds bounds = builder.build();
-        CameraUpdate mCameraUpdate = CameraUpdateFactory.newLatLngBounds(bounds, 2);
-        mMap.animateCamera(mCameraUpdate);
+
 
         drawPolyLineOnMap();
 
-        mMap.addMarker(new MarkerOptions().position(directionPoint.get(directionPoint.size() - 1)));
-
-        marker = mMap.addMarker(new MarkerOptions().position(directionPoint.get(0))
-                .flat(true)
-                .icon(BitmapDescriptorFactory.fromBitmap(smallMarker)));
         hasndler = new Handler();
         index = -1;
         next = 1;
@@ -167,7 +176,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 }
 
                 ValueAnimator valueAnimator = ValueAnimator.ofFloat(0, 1);
-                valueAnimator.setDuration(3000);
+                valueAnimator.setDuration(10000);
                 valueAnimator.setInterpolator(new LinearInterpolator());
                 valueAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
                     @Override
@@ -191,9 +200,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
 
                 if (index != directionPoint.size() - 1) {
-                    hasndler.postDelayed(this, 3000);
+                    hasndler.postDelayed(this, 10000);
                 }
             }
-        }, 3000);
+        }, 10000);
     }
 }
